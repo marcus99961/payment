@@ -35,6 +35,7 @@ Route::post('/updatePayment/{id}',[PaymentController::class, 'update']);
 Route::post('/paymentForm/{id}',[PaymentController::class, 'form']);
 Route::post('/paidPayment/{id}',[PaymentController::class, 'paid']);
 Route::post('/reportPayment',[PaymentController::class, 'report']);
+Route::post('/reportPaymentbydept',[PaymentController::class, 'reportbydept']);
 
 Route::get('/getUsers',[UserController::class, 'index']);
 Route::get('/getUsers/{id}',[UserController::class, 'show']);

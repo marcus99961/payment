@@ -303,7 +303,7 @@ class PaymentController extends Controller
             $this->pdf->Ln(25);
             $this->pdf->Cell(190,10,'_____________                    ______________                ______________               ______________',0,1,'C',false);
             $this->pdf->Cell(45,10,$payment->department->name,0,0,'C',false);
-            $this->pdf->Cell(145,10,'          Finance                       Financial Controller                  General Manager',0,1,'C',false);
+            $this->pdf->Cell(145,10,'          Finance                       Chief Accountant                  General Manager',0,1,'C',false);
 
             $this->pdf->Ln(10);
             $this->pdf->Cell(185,10,'PLEASE DELETE IF NOT APPLICABLE',0,1,'L',false);
@@ -367,6 +367,71 @@ class PaymentController extends Controller
             $this->fpdf->Cell($width_cell[2], 8, $dat->amount,1,1,'R');
             //   $this->fpdf->Cell($width_cell[1], 8, $dat->kilo,1,1,'R');
         }
+        // $this->fpdf->Cell($width_cell[4], 10, 'Fuel Kilo/Liter- '. $average_consume,1,0,'R');
+        // $this->fpdf->Cell($width_cell[1], 10, $last_qty->qty,1,0,'R');
+        // $this->fpdf->Cell($width_cell[1], 10, number_format($average, 2, '.', ''),1,0,'R');
+        // $this->fpdf->Cell($width_cell[1], 10, $sum_amt,1,0,'R');
+        // $this->fpdf->Cell($width_cell[1], 10, $kilo_total,1,1,'R');
+        $this->fpdf->Output();
+
+        exit;
+    }
+    public function reportbydept(Request $request)
+    {
+        // $validateData = $request->validate([
+        //     'from_date' => 'required',
+        //     'to_date'=>'required'
+
+
+
+
+        //    ]);
+
+        $payments = Payment::whereBetween('payment_date', [$request->from_date, $request->to_date])
+            ->where('department_id', Auth::user()->department_id)
+            ->where('currency','MMK')
+            ->orderBy('payment_date')
+            ->get();
+            $total = Payment::whereBetween('payment_date', [$request->from_date, $request->to_date])
+            ->where('department_id', Auth::user()->department_id)
+            ->where('currency','MMK')
+            ->selectRaw('sum(amount) as total_amount')
+            ->first();
+          //  dd($total);
+
+        $this->fpdf = new Fpdf();
+        $width_cell=array(10,20,32,95,55,25,25,25,20,30,219);
+        $this->fpdf->AddPage('L','A4');
+        $this->fpdf->SetFont('Times', 'B', 11);
+        $this->fpdf->SetFillColor(230,230,230);
+        $this->fpdf->Cell(261,10,'MMK Report  '.date('d-m-y', strtotime($request->from_date)).'  To  '.date('d-m-y', strtotime($request->to_date)),0,1,'C',true);
+        $this->fpdf->Cell($width_cell[0], 10, 'Sr',1,0,'C');
+        $this->fpdf->Cell($width_cell[1], 10,'Date',1,0,'C');
+        $this->fpdf->Cell($width_cell[2], 10, 'Department',1,0,'C');
+        $this->fpdf->Cell($width_cell[3], 10, 'Descriptions',1,0,'C');
+        $this->fpdf->Cell($width_cell[2], 10, 'Supplier',1,0,'C');
+        $this->fpdf->Cell($width_cell[1], 10, 'Settle by',1,0,'C');
+        $this->fpdf->Cell($width_cell[1], 10, 'Currency',1,0,'C');
+        $this->fpdf->Cell($width_cell[2], 10, 'Amount',1,1,'C');
+        // $this->fpdf->Cell($width_cell[1], 10, 'Amount',1,0,'C');
+        // $this->fpdf->Cell($width_cell[1], 10, 'Kilo',1,1,'C');
+        $i=1;
+        $this->fpdf->SetFont('Times', '', 10);
+        foreach($payments as $dat) {
+            $this->fpdf->Cell($width_cell[0], 8, $i++,1,0,'R');
+            $this->fpdf->Cell($width_cell[1], 8, date('d-m-y', strtotime($dat->payment_date)),1,0);
+            $this->fpdf->Cell($width_cell[2], 8, $dat->department->name,1,0,'L');
+            $this->fpdf->Cell($width_cell[3], 8, $dat->description,1,0,'L');
+            $this->fpdf->Cell($width_cell[2], 8, $dat->supplier,1,0,'C');
+            $this->fpdf->Cell($width_cell[1], 8, $dat->settle_by,1,0,'C');
+            $this->fpdf->Cell($width_cell[1], 8, $dat->currency,1,0,'C');
+            $this->fpdf->Cell($width_cell[2], 8, $dat->amount,1,1,'R');
+            //   $this->fpdf->Cell($width_cell[1], 8, $dat->kilo,1,1,'R');
+        }
+        $this->fpdf->SetFont('Times', 'B', 11);
+        $this->fpdf->SetFillColor(230,230,230);
+        $this->fpdf->Cell(229, 8,'Grand Total',1,0,'R',true);
+        $this->fpdf->Cell($width_cell[2], 8, $total->total_amount,1,1,'R',true);
         // $this->fpdf->Cell($width_cell[4], 10, 'Fuel Kilo/Liter- '. $average_consume,1,0,'R');
         // $this->fpdf->Cell($width_cell[1], 10, $last_qty->qty,1,0,'R');
         // $this->fpdf->Cell($width_cell[1], 10, number_format($average, 2, '.', ''),1,0,'R');

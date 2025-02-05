@@ -11,7 +11,7 @@
                             <input class="form-control-sm rounded" type="text" v-model="keyword" placeholder="search payment..">
                         </div>
                         <div class="col-md-4">
-
+                            <button @click="reportbyDepartment" class="btn-info btn-sm float-end mx-2">By Date/Department</button>
                                 <button @click="report" v-if="current_user.role_id==2"  class="btn-info btn-sm float-end mx-2">Report by Date</button>
 
                         </div>
@@ -188,7 +188,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="reportPayment()">Generate</button>
+                    <!-- <button type="button" class="btn btn-primary" @click="reportPayment()">Generate</button> -->
+                    <button type="button" class="btn btn-primary" @click="!departmentrpt ? reportPayment(): reportPaymentbydept()" >{{!departmentrpt ? 'Generate': 'ByDept Generate' }}</button>
+
                 </div>
             </div>
         </div>
@@ -206,6 +208,7 @@ export default {
             editMode: false,
             deleteMode: false,
             paidMode:false,
+            departmentrpt:false,
             keyword: null,
 
             paymentData: {
@@ -380,7 +383,7 @@ export default {
             reader.readAsDataURL(file);
         },
         report(){
-
+            this.departmentrpt=false;
             this.reportData={
                 from_date:'',
                 to_date: '',
@@ -390,6 +393,17 @@ export default {
 
             $('#reportModal').modal('show')
         },
+        reportbyDepartment(){
+            this.departmentrpt=true;
+            this.reportData={
+                from_date:'',
+                to_date: '',
+            }
+
+
+
+            $('#reportModal').modal('show')
+            },
         reportPayment(){
 
             axios({
@@ -409,6 +423,25 @@ export default {
 
                 });
         },
+        reportPaymentbydept(){
+
+            axios({
+                method:'post',
+                url:'/api/reportPaymentbydept',
+                responseType:'arraybuffer',
+                data: this.reportData
+            })
+                .then(function(response) {
+                    let blob = new Blob([response.data], { type:   'application/pdf' } );
+                    let link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'Reportpayment_by_dept.pdf';
+                    link.click();
+                    $('#reportModal').modal('hide')
+
+
+                });
+            },
         resetInput(){
             this.report.from_date = '';
             this.report.to_date = '';
