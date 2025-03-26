@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SendPaymentNotiQueue;
+use App\Models\Attachment;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,11 @@ class PaymentController extends Controller
         $this->pdf = $pdf;
         return $this->middleware('auth:api');
     }
-
+    public function attachedfiles()
+    {
+       $files= Attachment::all();
+       return response()->json($files);
+    }
     public function index(Request $request)
     {
         if(Auth::user()->role_id==2){
@@ -161,8 +166,43 @@ class PaymentController extends Controller
 
         return response()->json('Success');
     }
+    public function fileupload(Request $request)
 
-   
+    {
+       // dd($request->payment_id);
+        $upload_path = 'upload/';
+        $fileName = time().'.'.$request->file->getClientOriginalExtension();
+
+        $request->file->move(public_path('upload'), $fileName);
+
+        $attachment_url = $upload_path.$fileName;  
+        Attachment::create([
+            'payment_id' => $request->payment_id,
+            'attachment' => $attachment_url,
+            'user_id' => Auth::user()->id,
+        ]);      
+
+        return response()->json(['success'=>'You have successfully upload file.']);
+
+    }
+
+    public function deleteattachment($id)
+    {
+        $deleteAttachment = Attachment::find($id);
+        if($deleteAttachment->user_id == Auth::user()->id){  
+
+           
+           unlink($deleteAttachment->attachment);
+         
+           $deleteAttachment->delete();
+            return response()->json(['success' => true], 200);
+        }else{
+            return response()->json(['success' => false], 503);
+        }
+
+
+
+    }
     /**
      * Display the specified resource.
      */
@@ -303,7 +343,7 @@ class PaymentController extends Controller
             $this->pdf->Ln(25);
             $this->pdf->Cell(190,10,'_____________                    ______________                ______________               ______________',0,1,'C',false);
             $this->pdf->Cell(45,10,$payment->department->name,0,0,'C',false);
-            $this->pdf->Cell(145,10,'          Finance                       Chief Accountant                  General Manager',0,1,'C',false);
+            $this->pdf->Cell(145,10,'          Finance                         Assistant FC            Cluster General Manager',0,1,'C',false);
 
             $this->pdf->Ln(10);
             $this->pdf->Cell(185,10,'PLEASE DELETE IF NOT APPLICABLE',0,1,'L',false);

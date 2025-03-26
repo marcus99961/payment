@@ -16,6 +16,7 @@
         "@vitejs/plugin-vue": "^4.0.0",
         "@vue/compiler-sfc": "^3.2.47",
         "laravel-vue-pagination": "^4.0.0",
+        "sweetalert2": "^11.17.2",
         "vue": "^3.2.36",
         "vue-loader": "^17.0.1",
         "vue-router": "^4.1.6",

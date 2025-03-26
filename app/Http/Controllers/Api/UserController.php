@@ -106,9 +106,11 @@ class UserController extends Controller
             $image_url = $upload_path.$name;
             $img->save($image_url);
             $user = User::where('id',$request->id)->first();
-            // if($user->signature){
-            //     unlink($user->signature);
-            // }
+            if($user->signature){
+                if (file_exists($user->signature)) {               
+                unlink($user->signature);
+                }
+            }
             User::where('id',$request->id)->update([
                 'signature' => $image_url
             ]);       

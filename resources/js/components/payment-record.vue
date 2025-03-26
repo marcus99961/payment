@@ -38,7 +38,7 @@
                                 <td>{{index + 1}}</td>
 
                                 <td>{{payment.payment_date}}</td>
-                                <td>{{payment.py_no}}</td>
+                                <td @dblclick.prevent="attached(payment)">{{payment.py_no}}</td>
                                 <td>{{payment.name}}</td>
                                 <td><div v-if="payment.supplier.length<19">{{payment.supplier}}</div>
                                     <div class="myDIV" v-else >{{ payment.supplier.substring(0,19)+".." }}</div>
@@ -50,7 +50,7 @@
 
 
                                     <button @click="form(payment)" class="btn btn-primary btn-sm mx-1">Form</button>
-
+                                    <button @click="attachments(payment)" class="btn btn-primary btn-sm mx-1">Attachments</button>
 
                                 </td>
 
@@ -195,10 +195,72 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="attachModal"  tabindex="-1" aria-labelledby="attachModalLabel" aria-hidden="true">
+        <div :class="`modal-dialog ${!deleteMode ? 'modal-lg': 'modal-sm'}`">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="attachModalLabel" v-show="!deleteMode"> {{!editMode ? 'Attach file': 'Update Room' }} </h5>
+               
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                  
+                  
+                    <form @submit="formSubmit" enctype="multipart/form-data">
+
+                        <strong>File:</strong>
+
+                    <input type="file" class="form-control" v-on:change="onFileChange">
+                    <button class="btn btn-success mt-2">Submit</button>
+                    </form>
+
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <!-- <button type="button" class="btn btn-primary" @click="!editMode ? storePhoto(): updateComplaint()" >{{!editMode ? 'Save': 'Save Changes' }}</button> -->
+                </div>
+              
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="attachmentModal"  tabindex="-1" aria-labelledby="attachmentModelLabel" aria-hidden="true">
+        <div :class="`modal-dialog ${!deleteMode ? 'modal-lg': 'modal-sm'}`">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="attachmentModelLabel" v-show="!deleteMode"> {{!editMode ? 'Attach file': 'Update Room' }} </h5>
+               
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12" v-for="(attach, index) in attachedfiles ">
+                            <div class="col-md-4 mx-2 my-2" v-if="paymentData.id==attach.payment_id">
+                                <a :href="attach.attachment" target="_blank" > Download-{{ index }}</a> <button class="btn btn-danger btn-sm" @click="removeAttachment(attach.id)">Remove</button>
+                            </div>                          
+                            
+                         
+                        </div>
+                    </div>
+                   
+                    <!-- <a href="upload/1742877914.pdf" target="_blank"> Download</a>  -->
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <!-- <button type="button" class="btn btn-primary" @click="!editMode ? storePhoto(): updateComplaint()" >{{!editMode ? 'Save': 'Save Changes' }}</button> -->
+                </div>
+              
+            </div>
+        </div>
+    </div>
 
 </template>
 
 <script>
+import Swal from 'sweetalert2'
 export default {
     setup: () => ({
         title: 'Paid Payments'
@@ -227,6 +289,7 @@ export default {
 
             },
             payments: {},
+            attachedfiles: {},
             current_user: {},
             errors:{},
         }
@@ -242,6 +305,9 @@ export default {
     created(){
         console.log(window.user)
         this.current_user = window.user
+        axios.get('/api/getAttachedfiles').then(response=>{
+                this.attachedfiles = response.data
+            })
     },
     methods: {
         getPayments(){
@@ -298,6 +364,108 @@ export default {
             $('#paymentModal').modal('show')
 
         },
+        attached(payment){
+         
+         
+         this.paymentData= {
+             id : payment.id,          
+            
+         }
+         $('#attachModal').modal('show')
+      
+     
+    },
+        attachments(payment){
+            this.paymentData.id = payment.id
+          
+            axios.get('/api/getAttachedfiles').then(response=>{
+                                    this.attachedfiles = response.data
+                                    })
+            $('#attachmentModal').modal('show')
+
+        },
+        onFileChange(e){
+
+            console.log(e.target.files[0]);
+
+            this.file = e.target.files[0];
+
+            },
+
+    formSubmit(e) {
+
+            e.preventDefault();
+
+            let currentObj = this;
+
+
+
+            const config = {
+
+                headers: { 'content-type': 'multipart/form-data' }
+
+            }
+
+
+
+            let formData = new FormData();
+
+            formData.append('file', this.file);
+            formData.append('payment_id', this.paymentData.id)
+
+
+
+            axios.post(window.url + 'api/formSubmit', formData, config)
+
+            .then(function (response) {
+
+                $('#attachModal').modal('hide');
+             
+             
+           
+            })
+
+            .catch(function (error) {
+                console.log(errors)
+                // currentObj.output = error;
+
+            });
+
+    },
+    removeAttachment(id) {
+
+            
+                Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this image!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            axios.delete(`/api/attachment/${id}`)
+                                .then((response) => {                    
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'Your file has been deleted.',
+                                        'success'
+                                    )
+                                
+                                    axios.get('/api/getAttachedfiles').then(response=>{
+                                    this.attachedfiles = response.data
+                                    })
+                                }).catch(errors=>{
+                                    Swal.fire(
+                                        'No!!!',
+                                        'You have no right to delete it',
+                                        'error'
+                                    )
+                                });
+                        }
+                    })
+    },
         editPayment(payment){
             this.editMode = true
             this.deleteMode= false
@@ -445,6 +613,7 @@ export default {
         resetInput(){
             this.report.from_date = '';
             this.report.to_date = '';
+           
         },
         storePayment(){
 

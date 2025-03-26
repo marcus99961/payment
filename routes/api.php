@@ -28,6 +28,7 @@ Route::post('/deleteDepartment/{id}',[DepartmentController::class, 'destroy']);
 
 
 Route::get('/getPayments',[PaymentController::class, 'index']);
+Route::get('/getAttachedfiles',[PaymentController::class, 'attachedfiles']);
 Route::get('/getPaids',[PaymentController::class, 'record']);
 Route::post('/storePayment',[PaymentController::class, 'store']);
 Route::post('/deletePayment/{id}',[PaymentController::class, 'destroy']);
@@ -36,6 +37,8 @@ Route::post('/paymentForm/{id}',[PaymentController::class, 'form']);
 Route::post('/paidPayment/{id}',[PaymentController::class, 'paid']);
 Route::post('/reportPayment',[PaymentController::class, 'report']);
 Route::post('/reportPaymentbydept',[PaymentController::class, 'reportbydept']);
+Route::post('/formSubmit',[PaymentController::class, 'fileupload']);
+Route::delete('/attachment/{id}', [PaymentController::class, 'deleteattachment']);
 
 Route::get('/getUsers',[UserController::class, 'index']);
 Route::get('/getUsers/{id}',[UserController::class, 'show']);
