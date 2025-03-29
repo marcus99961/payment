@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendPaymentNotiQueue;
 use App\Models\Attachment;
 use App\Models\Payment;
+use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -33,11 +34,7 @@ class PaymentController extends Controller
         $this->pdf = $pdf;
         return $this->middleware('auth:api');
     }
-    public function attachedfiles()
-    {
-       $files= Attachment::all();
-       return response()->json($files);
-    }
+    
     public function index(Request $request)
     {
         if(Auth::user()->role_id==2){
@@ -166,6 +163,11 @@ class PaymentController extends Controller
 
         return response()->json('Success');
     }
+    public function attachedfiles()
+    {
+       $files= Attachment::all();
+       return response()->json($files);
+    }
     public function fileupload(Request $request)
 
     {
@@ -251,6 +253,10 @@ class PaymentController extends Controller
     }
     public function form(string $id)
     {
+        $approval1 = Setting::find(1)->value;
+        $approval2 = Setting::find(2)->value;
+        $approval3 = Setting::find(4)->value;
+       // dd($approval3);
         $payment = Payment::where('id',$id)->first();
         if(!$payment->ct==0 && $payment->ct <= 15){
             $ct = $payment->amount * $payment->ct/100;
@@ -342,8 +348,10 @@ class PaymentController extends Controller
             $this->pdf->Cell(190,10,'Prepared By                         Checked By                       Approved By                     Approved By',0,1,'C',false);
             $this->pdf->Ln(25);
             $this->pdf->Cell(190,10,'_____________                    ______________                ______________               ______________',0,1,'C',false);
-            $this->pdf->Cell(45,10,$payment->department->name,0,0,'C',false);
-            $this->pdf->Cell(145,10,'          Finance                         Assistant FC            Cluster General Manager',0,1,'C',false);
+            $this->pdf->Cell(48,10,$payment->department->name,0,0,'C',false);
+            $this->pdf->Cell(48,10,$approval1,0,0,'C',false);
+            $this->pdf->Cell(48,10,$approval2,0,0,'C',false);
+            $this->pdf->Cell(48,10,$approval3,0,1,'C',false);
 
             $this->pdf->Ln(10);
             $this->pdf->Cell(185,10,'PLEASE DELETE IF NOT APPLICABLE',0,1,'L',false);

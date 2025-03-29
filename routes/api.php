@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,9 @@ Route::post('/updateUser/{id}',[UserController::class, 'update']);
 Route::post('deleteUser/{id}',[UserController::class, 'destroy']);
 Route::post('updatepassword',[UserController::class, 'updatepassword']);
 Route::post('updatename',[UserController::class, 'updatename']);
+
+Route::get('/getSettings',[SettingController::class, 'index']);
+Route::post('/settings',[SettingController::class, 'update']);
 
 
 

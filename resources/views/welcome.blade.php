@@ -47,6 +47,9 @@
                         <li class="nav-item">
                             <router-link class="nav-link" to="/users">User</router-link>
                         </li>
+                        <li class="nav-item">
+                            <router-link class="nav-link" to="/setting">Settings</router-link>
+                        </li>
                     @endif
                     <li class="nav-item">
                         <router-link class="nav-link" to="/payments">Payment</router-link>

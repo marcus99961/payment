@@ -186,7 +186,7 @@
 </template>
 
 <script>
-
+import { useSettingStore } from '../stores/SettingStore';
 export default {
     setup: () => ({
         title: 'All Payments'
@@ -213,6 +213,7 @@ export default {
             payments: {},
             current_user: {},
             errors:{},
+            settingStore: {},
         }
     },
     watch: {
@@ -224,6 +225,7 @@ export default {
         this.getPayments()
     },
     created(){
+       this.settingStore = useSettingStore()
         console.log(window.user)
         this.current_user = window.user
     },
